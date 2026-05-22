@@ -120,7 +120,7 @@
     </section>
 
     <script>
-        const API_URL = 'https://backend-aula07-vercel.vercel.app/api';
+        const API_URL = 'http://localhost:3000/api';
         const navCategorias = document.getElementById('nav-categorias');
         const listaProdutos = document.getElementById('lista-produtos');
         const categoriaTitulo = document.getElementById('categorias-titulo');
@@ -128,16 +128,20 @@
         let categoriasAtivaId = null;
 
         async function carregarCategorias() {
-            try {   
+            try {
                 const response = await fetch(`${API_URL}/categorias`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 categoriasData = await response.json();
-                renderizarBotoesCategorias();
-                if (categoriasData.length > 0) {
-                    selecionarCategoria(categoriasData[0].id, categoriasData[0].nome);
+                if (!Array.isArray(categoriasData) || categoriasData.length === 0) {
+                    throw new Error('Resposta vazia ou formato inválido');
                 }
-            }catch (error) {
+                renderizarBotoesCategorias();
+                selecionarCategoria(categoriasData[0].id, categoriasData[0].nome);
+            } catch (error) {
                 console.error('Error ao carregar as categorias:', error);
-                navCategorias.innerHTML = '<p class="text-red-500">Erro ao carregar menu.</p>'
+                navCategorias.innerHTML = '<p class="text-red-500">Erro ao carregar menu.</p>';
+                categoriaTitulo.innerHTML = 'Cardápio indisponível';
+                listaProdutos.innerHTML = '<p class="col-span-2 text-red-500">Não foi possível carregar o cardápio.</p>';
             }
         }
 
@@ -178,9 +182,10 @@
             `;
             try{
                 const response = await fetch(`${API_URL}/produtos?categoriaId=${categoriaId}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const produtos = await response.json();
                 renderizarProdutos(produtos);
-            }catch (error) {
+            } catch (error) {
                 console.error('Erro ao carregar produtos:', error);
                 listaProdutos.innerHTML = '<p class="col-span-2 text-red-500">Erro ao carregar produtos.</p>';
             }
@@ -203,7 +208,7 @@
                 card.innerHTML = `
                     <div class="absolute insert-0 z-0 cursor-pointer" onclick="abrirModalDealhes('${p.nome}', ${p.preco}, '${p.descricao || ''}', '${imgSource}', '${p.id}')">
                     </div>
-                    <img src="${imgSource}" alt="${p.nome}" class="w-full h-24 object-contain mb-2 mt-2 transition-transform duration-300 drop-shadow-sm group-hover:scale-105 pointer-events-none relative z-10" onerror="this.src='./assets/image/logo.png'">
+                    <img src="${imgSource}" alt="${p.nome}" class="w-full h-24 object-contain mb-2 mt-2 transition-transform duration-300 drop-shadow-sm group-hover:scale-105 pointer-events-none relative z-10" onerror="this.src='./assets/images/logo.png'">
                     <div class="text-left w-full mt-auto relative z-10 pointer-events-none">
                         <h4 class="font-bold text-ark text-sm leading-tigth">${p.nome}</h4>
                     </div>
